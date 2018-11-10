@@ -27,9 +27,20 @@ function setP2(name) {
 
 function reset_game_board(){
     
-    console.log(player);
+    $("#timer_display").remove();
+    $("#winning_move").html("");
     $("#" + player + "_move > img").removeClass("d-none");
     $("#" + player + "_move > img").addClass("d-block");
+    if(player === "p1"){
+        console.log("player===p1")
+        $("#p2_move > img").addClass("d-none");
+        $("#p2_move > img").removeClass("d-block");
+    }
+    else{
+        $("#p1_move > img").addClass("d-none");
+        $("#p1_move > img").removeClass("d-block");
+    }
+    database.ref(player_key).update({move: ""});
 }
 
 function compare_moves() {
@@ -103,7 +114,17 @@ function compare_moves() {
         }
             
     }
-    reset_game_board(); 
+    var time_count = 3;
+    var td = $('<p class="text-center" id="timer_display">'+ time_count + ' before next round.</p>');
+    $("#winning_move").append(td);
+    var timer = setInterval(function(){
+        $("#timer_display").text(--time_count + ' seconds before next round.');
+        if (time_count < 0){
+            clearInterval(timer);
+            reset_game_board();
+        }
+    },1000);
+    
 
 };
 
