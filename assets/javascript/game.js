@@ -13,26 +13,99 @@ firebase.initializeApp(config);
 var database = firebase.database();
 
 var player = "";
+var player_key;
 
 
 
 function setP1(name) {
     $("#p1").html("<p>" + name + "</p>");
-    player = "p1";
-}
+};
 
 function setP2(name) {
     $("#p2").html("<p>" + name + "</p>");
-    player = "p2";
+};
+
+function reset_game_board(){
+    
+    console.log(player);
+    $("#" + player + "_move > img").removeClass("d-none");
+    $("#" + player + "_move > img").addClass("d-block");
 }
 
-function play_game(){
+function compare_moves() {
+    var p1;
+    var p2;
+    database.ref().once("value", function (snapshot) {
+        p1 = snapshot.val().p1_key;
+        p2 = snapshot.val().p2_key;
+    });
+    database.ref(p1).once("value", function (snapshot) {
+        p1 = snapshot.val().move;
+    });
+    database.ref(p2).once("value", function (snapshot) {
+        p2 = snapshot.val().move;
+    });
 
-    var rock = $("<img>" );
+    if (player === "p1") {
+        $("#p2_" + p2).addClass("d-block");
+        $("#p2_" + p2).removeClass("d-none");
+    }
+    else {
+        $("#p1_" + p1).addClass("d-block");
+        $("#p1_" + p1).removeClass("d-none");
+    }
 
-    $("#"+player+"-move").append() 
 
-}
+    if (p1 === p2)
+        $("#winning_move").html("<p>It's a tie!</p>");
+    else if (p1 === "rock") {
+        if (p2 === "paper") {
+            if (player === "p1")
+                $("#winning_move").html("<p>You lose!</p>");
+            else
+                $("#winning_move").html("<p>You win!</p>");
+        }
+        else{
+            if (player === "p1")
+                $("#winning_move").html("<p>You win!</p>");
+            else
+                $("#winning_move").html("<p>You lose!</p>");
+        }
+    }
+    else if (p1 === "paper") {
+        if (p2 === "rock"){
+            if (player === "p1")
+                $("#winning_move").html("<p>You win!</p>");
+            else
+                $("#winning_move").html("<p>You lose!</p>");
+        }
+        else{
+            if (player === "p1")
+                $("#winning_move").html("<p>You lose!</p>");
+            else
+                $("#winning_move").html("<p>You win!</p>");
+        }
+            
+    }
+    else {
+        if (p2 === "rock"){
+            if (player === "p1")
+                $("#winning_move").html("<p>You lose!</p>");
+            else
+                $("#winning_move").html("<p>You win!</p>");
+        }
+            
+        else{
+            if (player === "p1")
+                $("#winning_move").html("<p>You win!</p>");
+            else
+                $("#winning_move").html("<p>You lose!</p>");
+        }
+            
+    }
+    reset_game_board(); 
+
+};
 
 function update_page(data) {
     database.ref().once('value').then(function (snapshot) {
@@ -42,7 +115,6 @@ function update_page(data) {
             });
         }
         if (snapshot.val().p2 === true) {
-            console.log("???");
             database.ref(snapshot.val().p2_key).once('value').then(function (snapshot) {
                 setP2(snapshot.val().name);
             });
@@ -62,12 +134,36 @@ function update_page(data) {
 }
 
 
+$("#reset").click(function (event) {
+    event.preventDefault();
+    database.ref().set({
+        p1: false,
+        p2: false,
+        p2_key: "",
+        p1_key: "",
+    });
+});
+
 $("document").ready(function () {
 
     database.ref().on("value", function (snapshot) {
-
-
         update_page(snapshot.val());
+
+        var temp1 = snapshot.val().p1_key;
+        var temp2 = snapshot.val().p2_key;
+
+        if (temp1 != "" && temp2 != "") {
+
+            database.ref(temp1).once("value", function (snapshot) {
+                temp1 = snapshot.val().move;
+            });
+            database.ref(temp2).once("value", function (snapshot) {
+                temp2 = snapshot.val().move;
+            });
+            if (temp1 != "" && temp2 != "")
+                compare_moves();
+        }
+        
     });
 
     $("#player").submit(function (event) {
@@ -104,19 +200,29 @@ $("document").ready(function () {
                     player = "p2"
                     $("#input_display").html('<p>You are player 2</p>');
                 }
+                player_key = temp;
                 $("#player").css("display", "none");
-                $("#"+player+"_move > img").removeClass("d-none");
-                $("#"+player+"_move > img").addClass("d-block");
-                input.val("");                    
+                $("#" + player + "_move > img").removeClass("d-none");
+                $("#" + player + "_move > img").addClass("d-block");
+                input.val("");
 
             });
         }
 
-        $("document").on("click","img",function(){
-            console.log(this);
+        $("body").on("click", "img", function () {
+            $("#" + player + "_move > img").addClass("d-none");
+            $("#" + player + "_move > img").removeClass("d-block");
+            $("#" + this.id).addClass("d-block");
+            $("#" + this.id).removeClass("d-none");
+            var player_move = this.id.substring(3);
+            database.ref(player_key).update({ move: player_move });
+
+
         });
 
-               
+
+
+
     });
 });
 

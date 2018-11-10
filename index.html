@@ -43,7 +43,7 @@
             </div>
 
             <div class="col-md text-center">
-                col2
+                <p class="font-weight-bold">Results</p>
             </div>
             <div class="col-md text-center" id="p2">
                 <p>Player 2</p>
@@ -57,7 +57,7 @@
                     <img src="assets/images/paper.png" class="mx-auto d-none" id="p1_paper">
                     <img src="assets/images/scissors.png" class="mx-auto d-none" id="p1_scissors">
                 </div>
-                <div class="col-md-4 flex-fill" id="winning_move"></div>
+                <div class="col-md-4 flex-fill text-center" id="winning_move"></div>
                 <div class="col-md-4 flex-fill" id="p2_move">
                         <p> </p>
                     <img src="assets/images/rock.png" class="mx-auto d-none" id="p2_rock">
@@ -77,8 +77,9 @@
             </form>
         </div>
     </div>
-
-
+    <form class="form-group">
+    <button class="btn btn-outline-primary mx-auto my-auto" id="reset" type="submit">Reset server</button>
+</form>
     <script src="assets/javascript/game.js"></script>
 
 </body>
