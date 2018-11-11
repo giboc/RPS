@@ -72,8 +72,10 @@ function compare_moves() {
         $("#p1_" + p1).removeClass("d-none");
     }
 
-    if (p1 === p2)
+    if (p1 === p2) {
         $("#winning_move").html("<p>It's a tie!</p>");
+        database.ref(player_key).update({ move: "" });
+    }
     else if (p1 === "rock") {
         if (p2 === "paper") {
             if (player === "p1") {
@@ -174,7 +176,7 @@ function compare_moves() {
 
 
 
-    
+
 
     var time_count = 3;
     var td = $('<p class="text-center" id="timer_display">' + time_count + ' before next round.</p>');
@@ -198,7 +200,43 @@ $("#reset").click(function (event) {
     });
 });
 
+
 $("document").ready(function () {
+    database.ref("chatlog").once("value", function (snapshot) {
+        $("#log").append(snapshot.val());
+    });
+    $("#log").append('\n\n\n\n\n\n');
+
+    $("#chat").submit(function (event) {
+        event.preventDefault();
+        database.ref("chatlog").push({
+            text: $("#chat_entry").val(),
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        })
+        var $textarea = $('#log');
+        $textarea.scrollTop($textarea[0].scrollHeight);
+        $("#chat_entry").val("");
+    });
+
+    database.ref("chatlog/").orderByChild("timestamp").limitToLast(1).on("child_added", function (snapshot) {
+        $("#log").append(snapshot.val().text + '\n');
+
+        var $textarea = $('#log');
+        $textarea.scrollTop($textarea[0].scrollHeight);
+    });
+
+    $("#reset").click(function (event) {
+        event.preventDefault();
+        database.ref().set({
+            p1: false,
+            p2: false,
+            p2_key: "",
+            p1_key: "",
+        });
+
+    });
+
+
     database.ref().on("value", function (snapshot) {
 
         if (snapshot.val().p1 === true) {
@@ -283,6 +321,8 @@ $("document").ready(function () {
             var player_move = this.id.substring(3);
             database.ref(player_key).update({ move: player_move });
         });
+
+
     });
 });
 
