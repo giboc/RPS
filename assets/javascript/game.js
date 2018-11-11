@@ -14,36 +14,42 @@ var database = firebase.database();
 
 var player = "";
 var player_key;
+var player_win = 0;
+var player_loss = 0;
 
 
 
-function setP1(name) {
-    $("#p1").html("<p>" + name + "</p>");
+function setP1(name, win_count) {
+    $("#p1").html("<p>Player 1: " + name + "</p>");
+    var score_display = $('<p class="text-center" id="p1_score">Score: ' + win_count + '</p>');
+    $("#p1").append(score_display);
 };
 
-function setP2(name) {
-    $("#p2").html("<p>" + name + "</p>");
+function setP2(name, win_count) {
+    $("#p2").html("<p>Player 2: " + name + "</p>");
+    var score_display = $('<p class="text-center" id="p2_score">Score: ' + win_count + '</p>');
+    $("#p2").append(score_display);
 };
 
-function reset_game_board(){
-    
+function reset_game_board() {
+
     $("#timer_display").remove();
     $("#winning_move").html("");
     $("#" + player + "_move > img").removeClass("d-none");
     $("#" + player + "_move > img").addClass("d-block");
-    if(player === "p1"){
-        console.log("player===p1")
+    if (player === "p1") {
         $("#p2_move > img").addClass("d-none");
         $("#p2_move > img").removeClass("d-block");
     }
-    else{
+    else {
         $("#p1_move > img").addClass("d-none");
         $("#p1_move > img").removeClass("d-block");
     }
-    database.ref(player_key).update({move: ""});
+
 }
 
 function compare_moves() {
+    console.log("start of comnpare moves, player_win: " + player_win);
     var p1;
     var p2;
     database.ref().once("value", function (snapshot) {
@@ -66,94 +72,121 @@ function compare_moves() {
         $("#p1_" + p1).removeClass("d-none");
     }
 
-
     if (p1 === p2)
         $("#winning_move").html("<p>It's a tie!</p>");
     else if (p1 === "rock") {
         if (p2 === "paper") {
-            if (player === "p1")
+            if (player === "p1") {
                 $("#winning_move").html("<p>You lose!</p>");
-            else
+                database.ref(player_key).update({ move: "" });
+            }
+            else {
                 $("#winning_move").html("<p>You win!</p>");
+                database.ref(player_key).update({ move: "" });
+                var win_count;
+                database.ref(player_key + "/wins").transaction(function (current_wins) {
+                    win_count = current_wins + 1;
+                });
+                database.ref(player_key).update({ wins: win_count });
+            }
         }
-        else{
-            if (player === "p1")
+        else {
+            if (player === "p1") {
                 $("#winning_move").html("<p>You win!</p>");
-            else
+                database.ref(player_key).update({ move: "" });
+                var win_count;
+                database.ref(player_key + "/wins").transaction(function (current_wins) {
+                    win_count = current_wins + 1;
+                });
+                database.ref(player_key).update({ wins: win_count });
+            }
+            else {
                 $("#winning_move").html("<p>You lose!</p>");
+                database.ref(player_key).update({ move: "" });
+            }
         }
     }
     else if (p1 === "paper") {
-        if (p2 === "rock"){
-            if (player === "p1")
+        if (p2 === "rock") {
+            if (player === "p1") {
                 $("#winning_move").html("<p>You win!</p>");
-            else
+                database.ref(player_key).update({ move: "" });
+                var win_count;
+                database.ref(player_key + "/wins").transaction(function (current_wins) {
+                    win_count = current_wins + 1;
+                });
+                database.ref(player_key).update({ wins: win_count });
+            }
+            else {
                 $("#winning_move").html("<p>You lose!</p>");
+                database.ref(player_key).update({ move: "" });
+            }
         }
-        else{
-            if (player === "p1")
+        else {
+            if (player === "p1") {
                 $("#winning_move").html("<p>You lose!</p>");
-            else
+                database.ref(player_key).update({ move: "" });
+            }
+            else {
                 $("#winning_move").html("<p>You win!</p>");
+                database.ref(player_key).update({ move: "" });
+                var win_count;
+                database.ref(player_key + "/wins").transaction(function (current_wins) {
+                    win_count = current_wins + 1;
+                });
+                database.ref(player_key).update({ wins: win_count });
+            }
         }
-            
     }
     else {
-        if (p2 === "rock"){
-            if (player === "p1")
+        if (p2 === "rock") {
+            if (player === "p1") {
                 $("#winning_move").html("<p>You lose!</p>");
-            else
+                database.ref(player_key).update({ move: "" });
+            }
+            else {
                 $("#winning_move").html("<p>You win!</p>");
+                database.ref(player_key).update({ move: "" });
+                var win_count;
+                database.ref(player_key + "/wins").transaction(function (current_wins) {
+                    win_count = current_wins + 1;
+                });
+                database.ref(player_key).update({ wins: win_count });
+            }
         }
-            
-        else{
-            if (player === "p1")
+        else {
+            if (player === "p1") {
                 $("#winning_move").html("<p>You win!</p>");
-            else
+                database.ref(player_key).update({ move: "" });
+                var win_count;
+                database.ref(player_key + "/wins").transaction(function (current_wins) {
+                    win_count = current_wins + 1;
+                });
+                database.ref(player_key).update({ wins: win_count });
+            }
+            else {
                 $("#winning_move").html("<p>You lose!</p>");
+                database.ref(player_key).update({ move: "" });
+            }
         }
-            
     }
+    $("#" + player + "_score").text("Score: " + player_win + "</p>");
+
+
+
+    
+
     var time_count = 3;
-    var td = $('<p class="text-center" id="timer_display">'+ time_count + ' before next round.</p>');
+    var td = $('<p class="text-center" id="timer_display">' + time_count + ' before next round.</p>');
     $("#winning_move").append(td);
-    var timer = setInterval(function(){
+    var timer = setInterval(function () {
         $("#timer_display").text(--time_count + ' seconds before next round.');
-        if (time_count < 0){
+        if (time_count < 0) {
             clearInterval(timer);
             reset_game_board();
         }
-    },1000);
-    
-
+    }, 1000);
 };
-
-function update_page(data) {
-    database.ref().once('value').then(function (snapshot) {
-        if (snapshot.val().p1 === true) {
-            database.ref(snapshot.val().p1_key).once('value').then(function (snapshot) {
-                setP1(snapshot.val().name);
-            });
-        }
-        if (snapshot.val().p2 === true) {
-            database.ref(snapshot.val().p2_key).once('value').then(function (snapshot) {
-                setP2(snapshot.val().name);
-            });
-        }
-        if (snapshot.val().p1 === true && snapshot.val().p2 === true && player === "") {
-
-            $("#player").css("display", "none");
-            $("#input_display").html("<p>Too many players!</p>");
-        }
-        if (snapshot.val().p1 === true && snapshot.val().p2 === true && player != "") {
-
-            //
-        }
-
-    });
-
-}
-
 
 $("#reset").click(function (event) {
     event.preventDefault();
@@ -166,9 +199,23 @@ $("#reset").click(function (event) {
 });
 
 $("document").ready(function () {
-
     database.ref().on("value", function (snapshot) {
-        update_page(snapshot.val());
+
+        if (snapshot.val().p1 === true) {
+            database.ref(snapshot.val().p1_key).once('value').then(function (snapshot) {
+                setP1(snapshot.val().name, snapshot.val().wins);
+            });
+        }
+        if (snapshot.val().p2 === true) {
+            database.ref(snapshot.val().p2_key).once('value').then(function (snapshot) {
+                setP2(snapshot.val().name, snapshot.val().wins);
+            });
+        }
+        if (snapshot.val().p1 === true && snapshot.val().p2 === true && player === "") {
+
+            $("#player").css("display", "none");
+            $("#input_display").html("<p>Too many players!</p>");
+        }
 
         var temp1 = snapshot.val().p1_key;
         var temp2 = snapshot.val().p2_key;
@@ -181,15 +228,14 @@ $("document").ready(function () {
             database.ref(temp2).once("value", function (snapshot) {
                 temp2 = snapshot.val().move;
             });
-            if (temp1 != "" && temp2 != "")
+            if (temp1 != "" && temp2 != "") {
                 compare_moves();
+            }
         }
-        
     });
 
     $("#player").submit(function (event) {
         event.preventDefault();
-
         var input = $("#player > input");
         if (input.val().trim() === "")
             alert("Invalid name!");
@@ -226,7 +272,6 @@ $("document").ready(function () {
                 $("#" + player + "_move > img").removeClass("d-none");
                 $("#" + player + "_move > img").addClass("d-block");
                 input.val("");
-
             });
         }
 
@@ -237,13 +282,7 @@ $("document").ready(function () {
             $("#" + this.id).removeClass("d-none");
             var player_move = this.id.substring(3);
             database.ref(player_key).update({ move: player_move });
-
-
         });
-
-
-
-
     });
 });
 
