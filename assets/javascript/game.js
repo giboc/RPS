@@ -1,4 +1,3 @@
-
 // Initialize Firebase
 var config = {
     apiKey: "AIzaSyCF_52AjWU6l1f9C__FK8pSTFxd0bGMSmg",
@@ -10,15 +9,12 @@ var config = {
 };
 firebase.initializeApp(config);
 
-var database = firebase.database();
+//global variables
+var database = firebase.database(); 
+var player = ""; //local global to keep track of which player you are.
+var player_key;  //Keeps track of the player_key for the firebase
 
-var player = "";
-var player_key;
-var player_win = 0;
-var player_loss = 0;
-
-
-
+//Small functions that set up the intitial display: player names and scores.
 function setP1(name, win_count) {
     $("#p1").html("<p>Player 1: " + name + "</p>");
     var score_display = $('<p class="text-center" id="p1_score">Score: ' + win_count + '</p>');
@@ -31,8 +27,8 @@ function setP2(name, win_count) {
     $("#p2").append(score_display);
 };
 
+//This function clears the page in between the rounds, and resets it the neutral state.
 function reset_game_board() {
-
     $("#timer_display").remove();
     $("#winning_move").html("");
     $("#" + player + "_move > img").removeClass("d-none");
@@ -45,11 +41,12 @@ function reset_game_board() {
         $("#p1_move > img").addClass("d-none");
         $("#p1_move > img").removeClass("d-block");
     }
-
 }
 
+//This function checks each player's input and determine who wins.
+//Also adjusts the win count for the winner.
+//Lastly, it clears out the current move in the database to prepare for next round.
 function compare_moves() {
-    console.log("start of comnpare moves, player_win: " + player_win);
     var p1;
     var p2;
     database.ref().once("value", function (snapshot) {
@@ -174,10 +171,8 @@ function compare_moves() {
     }
     $("#" + player + "_score").text("Score: " + player_win + "</p>");
 
-
-
-
-
+    //This probably should be it's own function but I'm running out of time :O
+    //This shows a countdown in between rounds. After 3 seconds, the new round begins.
     var time_count = 3;
     var td = $('<p class="text-center" id="timer_display">' + time_count + ' before next round.</p>');
     $("#winning_move").append(td);
@@ -190,23 +185,16 @@ function compare_moves() {
     }, 1000);
 };
 
-$("#reset").click(function (event) {
-    event.preventDefault();
-    database.ref().set({
-        p1: false,
-        p2: false,
-        p2_key: "",
-        p1_key: "",
-    });
-});
-
-
+//The main "ready" function
 $("document").ready(function () {
+    
+    //First, set up the chat box.
     database.ref("chatlog").once("value", function (snapshot) {
         $("#log").append(snapshot.val());
     });
-    $("#log").append('\n\n\n\n\n\n');
+    $("#log").append('\n\n\n\n\n\n');//Need 6 spaces to offset the chat log.
 
+    //On submit, update firebase database.
     $("#chat").submit(function (event) {
         event.preventDefault();
         database.ref("chatlog").push({
@@ -217,14 +205,15 @@ $("document").ready(function () {
         $textarea.scrollTop($textarea[0].scrollHeight);
         $("#chat_entry").val("");
     });
-
+    //When chatlog gets a new entry, added it to the log display.
     database.ref("chatlog/").orderByChild("timestamp").limitToLast(1).on("child_added", function (snapshot) {
         $("#log").append(snapshot.val().text + '\n');
 
         var $textarea = $('#log');
-        $textarea.scrollTop($textarea[0].scrollHeight);
+        $textarea.scrollTop($textarea[0].scrollHeight); //Keep the chat scrolled to the bottom.
     });
 
+    //Reset button for testing. I left it in because this RPS game isn't 100% complete.
     $("#reset").click(function (event) {
         event.preventDefault();
         database.ref().set({
@@ -238,7 +227,10 @@ $("document").ready(function () {
 
 
     database.ref().on("value", function (snapshot) {
-
+        //sets up the browser.
+        //If no players, default to player 1.
+        //If player 1 exists, default to player 2.
+        //If both players exist, do not allow the 3rd to play.
         if (snapshot.val().p1 === true) {
             database.ref(snapshot.val().p1_key).once('value').then(function (snapshot) {
                 setP1(snapshot.val().name, snapshot.val().wins);
@@ -272,6 +264,7 @@ $("document").ready(function () {
         }
     });
 
+    //Name entry for RPS game.
     $("#player").submit(function (event) {
         event.preventDefault();
         var input = $("#player > input");
@@ -312,7 +305,7 @@ $("document").ready(function () {
                 input.val("");
             });
         }
-
+        //what happens when you click the images.
         $("body").on("click", "img", function () {
             $("#" + player + "_move > img").addClass("d-none");
             $("#" + player + "_move > img").removeClass("d-block");
