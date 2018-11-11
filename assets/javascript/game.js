@@ -169,7 +169,6 @@ function compare_moves() {
             }
         }
     }
-    $("#" + player + "_score").text("Score: " + player_win + "</p>");
 
     //This probably should be it's own function but I'm running out of time :O
     //This shows a countdown in between rounds. After 3 seconds, the new round begins.
